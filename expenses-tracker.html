@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Tracker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+  margin: 0;
+  padding: 0;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  /* ✅ Background setup */
+  background: url('your-image.jpg') no-repeat center center fixed;
+  background-size: cover; /* Makes it fit any screen */
+  backdrop-filter: blur(4px); /* Adds smooth blur effect under white box */
+}
+
+    header {
+      background-color: rgba(74, 144, 226, 0.9);
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    main {
+      width: 95%;
+      max-width: 700px;
+      margin-top: 100px;
+      margin-bottom: 80px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+      overflow-x: auto;
+      backdrop-filter: blur(10px);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #4a90e2;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, select, button {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    button {
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #3c7cc4;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      text-align: center;
+      padding: 10px;
+    }
+
+    th {
+      background-color: #4a90e2;
+      color: white;
+    }
+
+    tfoot td {
+      font-weight: bold;
+      background-color: #eaf1fb;
+    }
+
+    .actions button {
+      background-color: #ff5c5c;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .actions button:hover {
+      background-color: #e64e4e;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      font-size: 0.9rem;
+      color: #fff;
+      background-color: rgba(74, 144, 226, 0.95);
+      width: 100%;
+      position: fixed;
+      bottom: 0;
+      box-shadow: 0 -3px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ✅ Responsive tweaks */
+    @media (max-width: 600px) {
+      header {
+        font-size: 1.2rem;
+        padding: 12px 0;
+      }
+
+      main {
+        margin-top: 90px;
+        margin-bottom: 70px;
+        padding: 20px;
+      }
+
+      form {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>💰Expense Tracker</header>
+
+  <main>
+    <h2>Track Your Daily Expenses</h2>
+    <form id="expense-form">
+      <input type="text" id="desc" placeholder="Description" required />
+      <input type="number" id="amount" placeholder="Amount (₦)" required />
+      <select id="category" required>
+        <option value="">Category</option>
+        <option value="Food">🍔 Food</option>
+        <option value="Transport">🚗 Transport</option>
+        <option value="Bills">💡 Bills</option>
+        <option value="Shopping">🛍 Shopping</option>
+        <option value="Others">📦 Others</option>
+      </select>
+      <input type="date" id="date" required />
+      <button type="submit">Add Expense</button>
+    </form>
+
+    <table id="expense-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Amount (₦)</th>
+          <th>Category</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5" id="total">Total: ₦0</td>
+        </tr>
+      </tfoot>
+    </table>
+  </main>
+
+  <footer>
+    Developed by <strong>Shobby Digital</strong>
+  </footer>
+
+  <script>
+    const form = document.getElementById("expense-form");
+    const tbody = document.querySelector("#expense-table tbody");
+    const totalDisplay = document.getElementById("total");
+
+    let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+    function renderExpenses() {
+      tbody.innerHTML = "";
+      let total = 0;
+
+      expenses.forEach((exp, index) => {
+        total += parseFloat(exp.amount);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${exp.desc}</td>
+          <td>₦${exp.amount}</td>
+          <td>${exp.category}</td>
+          <td>${exp.date}</td>
+          <td class="actions">
+            <button onclick="deleteExpense(${index})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      totalDisplay.textContent = `Total: ₦${total.toFixed(2)}`;
+      localStorage.setItem("expenses", JSON.stringify(expenses));
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const desc = document.getElementById("desc").value.trim();
+      const amount = document.getElementById("amount").value.trim();
+      const category = document.getElementById("category").value;
+      const date = document.getElementById("date").value;
+
+      if (!desc || !amount || !category || !date) return;
+
+      expenses.push({ desc, amount, category, date });
+      form.reset();
+      renderExpenses();
+    });
+
+    function deleteExpense(index) {
+      expenses.splice(index, 1);
+      renderExpenses();
+    }
+
+    renderExpenses();
+  </script>
+</body>
+</html>
